@@ -4,10 +4,14 @@ include $(TOP)/configure/CONFIG
 
 # Directories to build, any order
 DIRS += configure
+
+# only build on Win64
+ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),)
 DIRS += $(wildcard *Sup)
 DIRS += $(wildcard *App)
 DIRS += $(wildcard *Top)
 DIRS += $(wildcard iocBoot)
+endif
 
 # The build order is controlled by these dependency rules:
 
