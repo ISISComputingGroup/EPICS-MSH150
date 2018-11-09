@@ -1,0 +1,1 @@
+Import library created for LotHW64.dll using dumpbin and lib/def
