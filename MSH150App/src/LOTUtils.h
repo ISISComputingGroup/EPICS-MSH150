@@ -1,5 +1,11 @@
+#ifndef LOTUTILS_H
+#define LOTUTILS_H
 
-struct LOTUtils
+#include "LOTHw.h"
+
+#include <shareLib.h>
+
+struct epicsShareClass LOTUtils
 {
     static void build_system_model(const std::string& xmlfile);
 
@@ -7,15 +13,15 @@ struct LOTUtils
 
     static void get(const std::string& id, int token, int _index, double &value);
 	
-	static void get_comms_list(std::string& list);
+	static void get_comms_list(std::list<std::string>& list);
 
     static void initialise();
 	
-	static void get_hardware_list(std::string& list);
+	static void get_hardware_list(std::list<std::string>& list);
 	 
 	static void get_hardware_type(const std::string& id, int& HardwareType);
 			 
-	static void get_mono_items(const std::string& monoID, std::string& ItemIDs);
+	static void get_mono_items(const std::string& monoID, std::list<std::string>& ItemIDs);
 				 
 	static void get_str(const std::string& id, int token, int _index, std::string& s);
 
@@ -34,3 +40,6 @@ struct LOTUtils
 	static void version(std::string& version);
 
 };
+
+#endif /* LOTUTILS_H */
+ 

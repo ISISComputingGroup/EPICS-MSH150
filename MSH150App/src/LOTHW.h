@@ -1,3 +1,6 @@
+#ifndef LOTHW_H
+#define LOTHW_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -47,7 +50,7 @@ __declspec(dllimport) int LOT_version(char* Version);
 // Monochromator attributes
 //-----------------------------------------------------------------------------
 
-typedef enum MonochromatorAttributes {
+typedef enum LOTTokens {
   MonochromatorScanDirection = 10,
   MonochromatorCurrentWL = 11,
   MonochromatorCurrentGrating = 12,
@@ -109,8 +112,10 @@ typedef enum MonochromatorAttributes {
   lotMoveWithWavelength = 1001,
   lotDescriptor = 1002,
   lotParkOffset = 1003,
-  lotProductName = 1004,
+  lotProductName = 1004
+} LOTTokens;
 
+typedef enum LOTHWTypes {
 //-----------------------------------------------------------------------------
 // LOT Hardware Types
 //-----------------------------------------------------------------------------
@@ -121,7 +126,7 @@ typedef enum MonochromatorAttributes {
   lotMono               = 10004,
 
   lotUnknown            = 10011
-} MonochromatorAttributes;
+} LOTHWTypes;
 
 typedef enum LOTErrorCodes {
   LOT_OK                                = 0,
@@ -168,3 +173,5 @@ typedef enum LOTErrorCodes {
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* LOTHW_H */

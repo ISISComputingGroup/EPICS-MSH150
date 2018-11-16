@@ -32,4 +32,6 @@ iocBoot_DEPEND_DIRS += $(filter %App,$(DIRS))
 
 # Add any additional dependency rules here:
 
+MSH150TestApp_DEPEND_DIRS += MSH150App
+
 include $(TOP)/configure/RULES_TOP

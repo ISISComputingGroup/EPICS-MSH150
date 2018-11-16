@@ -1,0 +1,18 @@
+
+record(stringin, "$(P)$(R)")
+{
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),0,0)$(PARAM)")
+    field(SCAN, "I/O Intr")
+    field(DESC, "$(DESC=)")
+#    info(autosaveFields, "DESC")
+}
+
+$(SET=#) record(stringout, "$(P)$(R):SP")
+$(SET=#) {
+$(SET=#)     field(DTYP, "asynOctetWrite")
+$(SET=#)     field(OUT,  "@asyn($(PORT),0,0)$(PARAM)")
+$(SET=#)     field(SCAN, "Passive")
+$(SET=#)     field(DESC, "$(DESC=)")
+$(SET=#) #    info(autosaveFields, "DESC")
+$(SET=#) }
