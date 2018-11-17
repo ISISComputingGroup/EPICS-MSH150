@@ -22,6 +22,14 @@ $(APPNAME)_DBD += MSH150.dbd
 
 $(APPNAME)_LIBS += MSH150 asyn
 
+ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),)
+$(APPNAME)_SYS_LIBS_WIN32 += $(TOP)/implib/LotHW64
+endif
+
+ifneq ($(findstring win32,$(EPICS_HOST_ARCH)),)
+$(APPNAME)_SYS_LIBS_WIN32 += $(TOP)/implib/LotHW_cdecl
+endif
+
 # MSH150Test_registerRecordDeviceDriver.cpp derives from MSH150Test.dbd
 $(APPNAME)_SRCS += $(APPNAME)_registerRecordDeviceDriver.cpp
 
