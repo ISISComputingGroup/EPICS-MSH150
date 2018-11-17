@@ -5,8 +5,8 @@ include $(TOP)/configure/CONFIG
 # Directories to build, any order
 DIRS += configure
 
-# only build on Win64
-ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),)
+# only build on windows or win32
+ifeq ($(findstring linux,$(EPICS_HOST_ARCH)),)
 DIRS += $(wildcard *Sup)
 DIRS += $(wildcard *App)
 DIRS += $(wildcard *Top)

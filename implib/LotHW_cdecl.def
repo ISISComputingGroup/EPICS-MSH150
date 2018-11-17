@@ -1,0 +1,19 @@
+LIBRARY LotHW_cdecl
+EXPORTS
+LOT_build_system_model 
+LOT_close 
+LOT_get 
+LOT_get_comms_list 
+LOT_get_hardware_list 
+LOT_get_hardware_type 
+LOT_get_last_error 
+LOT_get_mono_items 
+LOT_get_str 
+LOT_initialise 
+LOT_recalibrate 
+LOT_save_setup 
+LOT_select_wavelength 
+LOT_set 
+LOT_set_c_group 
+LOT_set_str 
+LOT_version 

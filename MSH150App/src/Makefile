@@ -21,9 +21,16 @@ MSH150_SRCS += LOTUtils.cpp LOTPortDriver.cpp
 MSH150_LIBS += asyn
 MSH150_LIBS += $(EPICS_BASE_IOC_LIBS)
 
+ifneq ($(findstring windows,$(EPICS_HOST_ARCH)),)
 MSH150_SYS_LIBS_WIN32 += $(TOP)/implib/LotHW64
-
 BIN_INSTALLS_WIN32 += $(LOTDIR)/dlls/LotHW64.dll
+endif
+
+ifneq ($(findstring win32,$(EPICS_HOST_ARCH)),)
+MSH150_SYS_LIBS_WIN32 += $(TOP)/implib/LotHW_cdecl
+BIN_INSTALLS_WIN32 += $(LOTDIR)/dlls/LotHW_cdecl.dll
+endif
+
 DATA += ibex_test_config.xml
 
 #===========================

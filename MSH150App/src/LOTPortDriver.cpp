@@ -116,8 +116,8 @@ static void setupMappings()
 	// Miscellaneous attributes
 	//-----------------------------------------------------------------------------
 	addMapping(lotSettleDelay, "lotSettleDelay");
-	addMapping(lotMoveWithWavelength, "lotMoveWithWavelength");
-	addMapping(lotDescriptor, "lotDescriptor");
+	addMapping(lotMoveWithWavelength, "lotMoveWithWavelength", "MWWL");
+	addMapping(lotDescriptor, "lotDescriptor", "DESCR");
 	addMapping(lotParkOffset, "lotParkOffset");
 	addMapping(lotProductName, "lotProductName");
 }
@@ -351,6 +351,7 @@ void LOTPortDriver::report(FILE* fp, int details)
 
 LOTParam* LOTPortDriver::addRealParam(const std::string& id, int token, bool writable, int index)
 {
+//    std::cerr << "LOT: item " << id << " adding token " << TokenToName[token] << std::endl;
 	LOTParam* lp = new LOTRealParam(id, token, index, this);
 	char ind_str[10];
 	sprintf(ind_str, "%d", index);
@@ -366,6 +367,7 @@ LOTParam* LOTPortDriver::addRealParam(const std::string& id, int token, bool wri
 
 LOTParam* LOTPortDriver::addStringParam(const std::string& id, int token, bool writable, int index)
 {
+//    std::cerr << "LOT: item " << id << " adding token " << TokenToName[token] << std::endl;
 	LOTParam* lp = new LOTStringParam(id, token, index, this);
 	char ind_str[10];
 	sprintf(ind_str, "%d", index);
@@ -390,16 +392,16 @@ void LOTPortDriver::addHardwareParams(const std::string& item)
 	switch (hardware_type)
 	{
 	case lotInterface:
-		std::cerr << "lotInterface" << std::endl;
+		std::cerr << "LOT: found lotInterface: " << item << std::endl;
 		break;
 	case lotSAM:
-		std::cerr << "lotSAM" << std::endl;
+		std::cerr << "LOT: found lotSAM: " << item << std::endl;
 		break;
 	case lotSlit:
-		std::cerr << "lotSlit" << std::endl;
+		std::cerr << "LOT: found lotSlit: " << item<< std::endl;
 		break;
 	case lotFilterWheel:
-		std::cerr << "lotFilterWheel " << item << std::endl;
+		std::cerr << "LOT: found lotFilterWheel: " << item << std::endl;
 		addRealParam(item, LOTTokens::FWheelPositions);
 		LOTUtils::get(item, LOTTokens::FWheelPositions, 0, d);
 		for (int i = 1; i <= d; ++i)
@@ -411,7 +413,7 @@ void LOTPortDriver::addHardwareParams(const std::string& item)
 		addStringParam(item, LOTTokens::lotDescriptor);
 		break;
 	case lotMono:
-		std::cerr << "lotMono " << item << std::endl;
+		std::cerr << "LOT: found lotMono: " << item << std::endl;
 		addRealParam(item, LOTTokens::MonochromatorCurrentWL);
 		addRealParam(item, LOTTokens::MonochromatorCurrentGrating);
 		addRealParam(item, LOTTokens::MonochromatorModeSwitchNum);
@@ -421,17 +423,17 @@ void LOTPortDriver::addHardwareParams(const std::string& item)
 		addRealParam(item, LOTTokens::MonochromatorNumTurrets);
 		addStringParam(item, LOTTokens::lotDescriptor);
 		LOTUtils::get_mono_items(item, mono_items);
-		for (const auto& m : mono_items)
+		for (auto m = mono_items.cbegin(); m != mono_items.cend(); ++m)
 		{
-			std::cerr << "mono " << item << " with " << m << std::endl;
-			addHardwareParams(m);
+			std::cerr << "LOT: lotMono " << item << " has hardware item: " << *m << std::endl;
+			addHardwareParams(*m);
 		}
 		break;
 	case lotUnknown:
-		std::cerr << "lotUnknown" << std::endl;
+		std::cerr << "LOT: lotUnknown: " << item << std::endl;
 		break;
 	default:
-		std::cerr << "error" << std::endl;
+		std::cerr << "LOT: error: " << item << std::endl;
 		break;
 	}
 }
@@ -467,15 +469,22 @@ LOTPortDriver::LOTPortDriver(const char *portName, const char* config_file, cons
 	std::string lot_version;
 	LOTUtils::version(lot_version);
 	setStringParam(P_version, lot_version);
+	std::cerr << "LOT: SDK Version " << lot_version << std::endl;
+	std::cerr << "LOT: system model config file \"" << config_file << "\"" << std::endl;
 
+	if (simulate) 
+	{
+	    std::cerr << "LOT: Enabling Simulation mode on comms objects" << std::endl;
+	}
 	m_subst_file.open(subst_file, std::ios::out);
 	
 	LOTUtils::build_system_model(config_file);
 	std::list<std::string> comms_list, hardware_list, mono_items;
 	LOTUtils::get_comms_list(comms_list);
-	for (const auto& c : comms_list)
+	for (auto c = comms_list.cbegin(); c != comms_list.cend(); ++c)
 	{
-		LOTParam* lp = addRealParam(c, LOTTokens::SimulationMode);
+		std::cerr << "LOT: comms object: " << *c << std::endl;
+		LOTParam* lp = addRealParam(*c, LOTTokens::SimulationMode);
 		if (simulate)
 		{
 			setDoubleParam(lp->id(), 1.0);
@@ -484,11 +493,12 @@ LOTPortDriver::LOTPortDriver(const char *portName, const char* config_file, cons
 	}
 	LOTUtils::initialise();
 	LOTUtils::get_hardware_list(hardware_list);
-	for (const auto& h : hardware_list)
+	for (auto h = hardware_list.cbegin(); h != hardware_list.cend(); ++h)
 	{
-		addHardwareParams(h);
+		addHardwareParams(*h);
 	}
 	m_subst_file.close();
+	std::cerr << "LOT: generated substitutions file \"" << subst_file << "\"" << std::endl;
 
 	epicsAtExit(epicsExitFunc, this);
 
