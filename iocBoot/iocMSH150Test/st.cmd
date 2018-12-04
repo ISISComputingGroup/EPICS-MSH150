@@ -10,12 +10,13 @@ dbLoadDatabase("../../dbd/MSH150Test.dbd",0,0)
 MSH150Test_registerRecordDeviceDriver(pdbbase) 
 
 # used in generating substitutions file
-epicsEnvSet("P","$(MYPVPREFIX)MSH150:")
+epicsEnvSet("P","$(MYPVPREFIX)")
+epicsEnvSet("Q","MSH150_01:")
 
 LOTConfigure("L0", "$(TOP)/data/ibex_test_config.xml", "$(TOP)/db/LOT.substitutions", 1)
 
 ## Load record instances
-dbLoadRecords("$(TOP)/db/MSH150.db","P=$(MYPVPREFIX)MSH150:")
+dbLoadRecords("$(TOP)/db/MSH150.db","P=$(MYPVPREFIX),Q=MSH150_01:,PORT=L0")
 dbLoadTemplate("$(TOP)/db/LOT.substitutions")
 
 iocInit()

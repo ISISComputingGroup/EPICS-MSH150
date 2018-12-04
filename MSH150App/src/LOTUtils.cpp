@@ -89,7 +89,12 @@ static const char* lookupError(int code)
 	default:
 		return "LOT_UNKNOWN";
 	}
-} 
+}
+
+std::string LOTException::lotErrMsg() const
+{
+	return lookupError(m_errcode);
+}
 
 #define LOT_CHECK(__val) \
 { \
@@ -99,7 +104,6 @@ static const char* lookupError(int code)
         int errCode, address; \
 	    char myid[BUFFER_SIZE]; \
 	    myid[sizeof(myid) - 1] = '\0'; \
-		message << "LOT: " << __FUNCTION__ << "[\"" << __FILE__ << "\"/" << __LINE__ << "] "; \
 	    if (LOT_get_last_error(&errCode, myid, &address) == LOT_OK) \
 		{ \
 	        myid[sizeof(myid) - 1] = '\0'; \
@@ -109,8 +113,8 @@ static const char* lookupError(int code)
 		{ \
 			message << "unknown error"; \
 		} \
-        std::cerr << message.str() << std::endl; \
-		throw std::runtime_error(message.str()); \
+		std::cerr << "LOT: " << __FUNCTION__ << "[\"" << __FILE__ << "\"/" << __LINE__ << "] " << message.str() << std::endl; \
+		throw LOTException(message.str(), errCode, myid, address); \
 	} \
 }
 

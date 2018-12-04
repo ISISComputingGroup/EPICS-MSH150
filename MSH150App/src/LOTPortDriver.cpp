@@ -62,20 +62,20 @@ static void setupMappings()
 
 	addMapping(MonochromatorCurrentGrating, "MonochromatorCurrentGrating", "GRATING");
 	addMapping(MonochromatorInitialise, "MonochromatorInitialise");
-	addMapping(MonochromatorModeSwitchNum, "MonochromatorModeSwitchNum", "MODE:SWNUM");
-	addMapping(MonochromatorModeSwitchState, "MonochromatorModeSwitchState", "MODE:SWSTATE");
+	addMapping(MonochromatorModeSwitchNum, "MonochromatorModeSwitchNum", "MODE:SWNUM"); // for double single mode switching
+	addMapping(MonochromatorModeSwitchState, "MonochromatorModeSwitchState", "MODE:SWSTATE"); // state of SAM for above
 	addMapping(MonochromatorCanModeSwitch, "MonochromatorCanModeSwitch", "MODE:CANSWITCH");
-	addMapping(MonochromatorAutoSelectWavelength, "MonochromatorAutoSelectWavelength", "AUTOWL");
+	addMapping(MonochromatorAutoSelectWavelength, "MonochromatorAutoSelectWavelength", "AUTOWL"); // auto select grating
 	addMapping(MonochromatorZordSwitchSAM, "MonochromatorZordSwitchSAM");
 	addMapping(MonochromatorNumTurrets, "MonochromatorNumTurrets", "NUMTURRETS");
 	addMapping(MonochromatorCosAlpha, "MonochromatorCosAlpha");
 
-	addMapping(TurretNumGratings, "TurretNumGratings");
+	addMapping(TurretNumGratings, "TurretNumGratings", "TURNUMGRAT");
 
 	addMapping(GratingDensity, "GratingDensity");
 	addMapping(GratingZord, "GratingZord");
 	addMapping(GratingAlpha, "GratingAlpha");
-	addMapping(GratingSwitchWL, "GratingSwitchWL");
+	addMapping(GratingSwitchWL, "GratingSwitchWL", "GRATSWTWL");
 	addMapping(GratingBlaze, "GratingBlaze");
 
 	//-----------------------------------------------------------------------------
@@ -137,8 +137,8 @@ public:
 	int id() const { return m_asyn_id; }
 	const std::string& name() const { return m_asyn_name; }
 	LOTParam(const std::string& lot_id, int token, int index, asynPortDriver* driver) :
-		m_lot_id(lot_id), m_token(token), m_index(index), m_driver(driver), m_asyn_id(-1), m_asyn_name("") 
-	{ 
+		m_lot_id(lot_id), m_token(token), m_index(index), m_driver(driver), m_asyn_id(-1), m_asyn_name("")
+	{
 		std::ostringstream oss;
 		oss << lot_id << "_" << TokenToName[token];
 		if (index != -1)
@@ -209,6 +209,7 @@ asynStatus LOTPortDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 			setDoubleParam(function, value);
 			m_lot_params[function]->write();
 		}
+	    setStringParam(P_errMsg, "");
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
 			"%s:%s: function=%d, name=%s, value=%f\n",
 			driverName, functionName, function, paramName, value);
@@ -216,6 +217,7 @@ asynStatus LOTPortDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 	}
 	catch (const std::exception& ex)
 	{
+	    setStringParam(P_errMsg, ex.what());
 		epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
 			"%s:%s: status=%d, function=%d, name=%s, value=%f, error=%s",
 			driverName, functionName, status, function, paramName, value, ex.what());
@@ -243,10 +245,10 @@ asynStatus LOTPortDriver::readFloat64(asynUser *pasynUser, epicsFloat64 *value)
 	}
 	catch (const std::exception& ex)
 	{
-			epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
-				"%s:%s: function=%d, name=%s, error=%s, value=%f",
-				driverName, functionName, function, paramName, ex.what(), value);
-			return asynError;
+		epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
+			"%s:%s: function=%d, name=%s, error=%s, value=%f",
+			driverName, functionName, function, paramName, ex.what(), value);
+		return asynError;
 	}
 }
 
@@ -271,9 +273,9 @@ asynStatus LOTPortDriver::readOctet(asynUser *pasynUser, char *value, size_t max
 	}
 	catch (const std::exception& ex)
 	{
-			epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
-				"%s:%s: function=%d, name=%s, error=%s",
-				driverName, functionName, function, paramName, ex.what());
+		epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
+			"%s:%s: function=%d, name=%s, error=%s",
+			driverName, functionName, function, paramName, ex.what());
 		*nActual = 0;
 		if (eomReason) { *eomReason = ASYN_EOM_END; }
 		value[0] = '\0';
@@ -297,6 +299,7 @@ asynStatus LOTPortDriver::writeOctet(asynUser *pasynUser, const char *value, siz
 			setStringParam(function, value_s);
 			m_lot_params[function]->write();
 		}
+	    setStringParam(P_errMsg, "");
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
 			"%s:%s: function=%d, name=%s, value=%s\n",
 			driverName, functionName, function, paramName, value_s.c_str());
@@ -304,6 +307,7 @@ asynStatus LOTPortDriver::writeOctet(asynUser *pasynUser, const char *value, siz
 	}
 	catch (const std::exception& ex)
 	{
+	    setStringParam(P_errMsg, ex.what());
 		epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
 			"%s:%s: status=%d, function=%d, name=%s, value=%s, error=%s",
 			driverName, functionName, status, function, paramName, value_s.c_str(), ex.what());
@@ -329,6 +333,7 @@ asynStatus LOTPortDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 		{
 			LOTUtils::set_c_group(value);
 		}
+		setStringParam(P_errMsg, "");
 		asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
 			"%s:%s: function=%d, name=%s, value=%d\n",
 			driverName, functionName, function, paramName, value);
@@ -336,6 +341,7 @@ asynStatus LOTPortDriver::writeInt32(asynUser *pasynUser, epicsInt32 value)
 	}
 	catch (const std::exception& ex)
 	{
+	    setStringParam(P_errMsg, ex.what());
 		epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
 			"%s:%s: status=%d, function=%d, name=%s, value=%d, error=%s",
 			driverName, functionName, status, function, paramName, value, ex.what());
@@ -351,34 +357,34 @@ void LOTPortDriver::report(FILE* fp, int details)
 
 LOTParam* LOTPortDriver::addRealParam(const std::string& id, int token, bool writable, int index)
 {
-//    std::cerr << "LOT: item " << id << " adding token " << TokenToName[token] << std::endl;
+	//    std::cerr << "LOT: item " << id << " adding token " << TokenToName[token] << std::endl;
 	LOTParam* lp = new LOTRealParam(id, token, index, this);
 	char ind_str[10];
 	sprintf(ind_str, "%d", index);
 	int asyn_id = lp->id();
 	m_lot_params[asyn_id] = lp;
-	m_subst_file  << "file \"${MSH150}/db/LOT_real.template\" {\n";			
-	m_subst_file  << "    { P=\"" << macEnvExpand("$(P=)") << "\",R=\"" << boost::to_upper_copy<std::string>(id) << ":" << TokenToDBName[token] << (index != -1 ? ind_str : "") << 
-	         "\",PORT=\"" << portName << "\"" << ",PARAM=\"" << lp->name()  <<"\",DESC=\"" << TokenToName[token].substr(0,39) <<
-			 "\",SET=\"" << (writable ? "" : "#") << "\" }\n";
-	m_subst_file  << "}\n\n";
+	m_subst_file << "file \"${MSH150}/db/LOT_real.template\" {\n";
+	m_subst_file << "    { P=\"" << macEnvExpand("$(P=)") << "\",Q=\"" << macEnvExpand("$(Q=)") << "\",R=\"" << boost::to_upper_copy<std::string>(id) << ":" << TokenToDBName[token] << (index != -1 ? ind_str : "") <<
+		"\",PORT=\"" << portName << "\"" << ",PARAM=\"" << lp->name() << "\",DESC=\"" << TokenToName[token].substr(0, 39) <<
+		"\",SET=\"" << (writable ? "" : "#") << "\" }\n";
+	m_subst_file << "}\n\n";
 	return lp;
 }
 
 LOTParam* LOTPortDriver::addStringParam(const std::string& id, int token, bool writable, int index)
 {
-//    std::cerr << "LOT: item " << id << " adding token " << TokenToName[token] << std::endl;
+	//    std::cerr << "LOT: item " << id << " adding token " << TokenToName[token] << std::endl;
 	LOTParam* lp = new LOTStringParam(id, token, index, this);
 	char ind_str[10];
 	sprintf(ind_str, "%d", index);
 	int asyn_id = lp->id();
 	m_lot_params[asyn_id] = lp;
 
-	m_subst_file  << "file \"${MSH150}/db/LOT_string.template\" {\n";			
-	m_subst_file  << "    { P=\"" << macEnvExpand("$(P=)") << "\",R=\"" << boost::to_upper_copy<std::string>(id) << ":" << TokenToDBName[token] << (index != -1 ? ind_str : "") << 
-	         "\",PORT=\"" << portName << "\"" << ",PARAM=\"" << lp->name()  <<"\",DESC=\"" << TokenToName[token].substr(0,39) << 
-			 "\",SET=\"" << (writable ? "" : "#") << "\" }\n";
-	m_subst_file  << "}\n\n";
+	m_subst_file << "file \"${MSH150}/db/LOT_string.template\" {\n";
+	m_subst_file << "    { P=\"" << macEnvExpand("$(P=)") << "\",Q=\"" << macEnvExpand("$(Q=)") << "\",R=\"" << boost::to_upper_copy<std::string>(id) << ":" << TokenToDBName[token] << (index != -1 ? ind_str : "") <<
+		"\",PORT=\"" << portName << "\"" << ",PARAM=\"" << lp->name() << "\",DESC=\"" << TokenToName[token].substr(0, 39) <<
+		"\",SET=\"" << (writable ? "" : "#") << "\" }\n";
+	m_subst_file << "}\n\n";
 	return lp;
 }
 
@@ -398,7 +404,7 @@ void LOTPortDriver::addHardwareParams(const std::string& item)
 		std::cerr << "LOT: found lotSAM: " << item << std::endl;
 		break;
 	case lotSlit:
-		std::cerr << "LOT: found lotSlit: " << item<< std::endl;
+		std::cerr << "LOT: found lotSlit: " << item << std::endl;
 		break;
 	case lotFilterWheel:
 		std::cerr << "LOT: found lotFilterWheel: " << item << std::endl;
@@ -419,8 +425,14 @@ void LOTPortDriver::addHardwareParams(const std::string& item)
 		addRealParam(item, LOTTokens::MonochromatorModeSwitchNum);
 		addRealParam(item, LOTTokens::MonochromatorModeSwitchState);
 		addRealParam(item, LOTTokens::MonochromatorCanModeSwitch);
-		addRealParam(item, LOTTokens::MonochromatorAutoSelectWavelength); 
+		addRealParam(item, LOTTokens::MonochromatorAutoSelectWavelength);
 		addRealParam(item, LOTTokens::MonochromatorNumTurrets);
+		addRealParam(item, LOTTokens::TurretNumGratings);
+		LOTUtils::get(item, LOTTokens::TurretNumGratings, 0, d);
+		for (int i = 1; i <= d; ++i)
+		{
+			addRealParam(item, LOTTokens::GratingSwitchWL, false, i);
+		}
 		addStringParam(item, LOTTokens::lotDescriptor);
 		LOTUtils::get_mono_items(item, mono_items);
 		for (auto m = mono_items.cbegin(); m != mono_items.cend(); ++m)
@@ -463,21 +475,23 @@ LOTPortDriver::LOTPortDriver(const char *portName, const char* config_file, cons
 	createParam(P_saveSetupString, asynParamInt32, &P_saveSetup);
 	createParam(P_selectWavelengthString, asynParamFloat64, &P_selectWavelength);
 	createParam(P_versionString, asynParamOctet, &P_version);
+	createParam(P_errMsgString, asynParamOctet, &P_errMsg);
 	createParam(P_c_groupString, asynParamInt32, &P_c_group);
 
 	setStringParam(P_configFile, config_file);
+	setStringParam(P_errMsg, "");
 	std::string lot_version;
 	LOTUtils::version(lot_version);
 	setStringParam(P_version, lot_version);
 	std::cerr << "LOT: SDK Version " << lot_version << std::endl;
 	std::cerr << "LOT: system model config file \"" << config_file << "\"" << std::endl;
 
-	if (simulate) 
+	if (simulate)
 	{
-	    std::cerr << "LOT: Enabling Simulation mode on comms objects" << std::endl;
+		std::cerr << "LOT: Enabling Simulation mode on comms objects" << std::endl;
 	}
 	m_subst_file.open(subst_file, std::ios::out);
-	
+
 	LOTUtils::build_system_model(config_file);
 	std::list<std::string> comms_list, hardware_list, mono_items;
 	LOTUtils::get_comms_list(comms_list);
@@ -544,7 +558,7 @@ void LOTPortDriver::pollerTask(void* arg)
 	while (!m_shutdown_requested)
 	{
 		driver->updateValues();
-		epicsThreadSleep(0.1);
+		epicsThreadSleep(0.5);
 	}
 }
 

@@ -1,5 +1,5 @@
 
-record(ai, "$(P)$(R)")
+record(ai, "$(P)$(Q)$(R)")
 {
     field(DTYP, "asynFloat64")
     field(INP,  "@asyn($(PORT),0,0)$(PARAM)")
@@ -10,7 +10,7 @@ record(ai, "$(P)$(R)")
 #    info(autosaveFields, "DESC")
 }
 
-$(SET=#) record(ao, "$(P)$(R):SP")
+$(SET=#) record(ao, "$(P)$(Q)$(R):SP")
 $(SET=#) {
 $(SET=#)     field(DTYP, "asynFloat64")
 $(SET=#)     field(OUT,  "@asyn($(PORT),0,0)$(PARAM)")
