@@ -48,7 +48,6 @@ record(ao, "$(P)$(Q)WL:SP")
 	field(EGU, "")
     info(archive, "VAL")
 	info(autosaveFields, "VAL")
-	info(asyn:READBACK, "1")
 }
 
 record(longin, "$(P)$(Q)GROUP")
